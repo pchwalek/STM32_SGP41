@@ -37,17 +37,19 @@
  */
 
 #include "SensirionI2CSgp41.h"
-#include "Arduino.h"
-#include "SensirionCore.h"
-#include <Wire.h>
+
+#include "../Sensirion_Core/src/SensirionCore.h"
 
 #define SGP41_I2C_ADDRESS 0x59
 
 SensirionI2CSgp41::SensirionI2CSgp41() {
 }
 
-void SensirionI2CSgp41::begin(TwoWire& i2cBus) {
-    _i2cBus = &i2cBus;
+bool SensirionI2CSgp41::begin(I2C_HandleTypeDef *i2c_handle) {
+	i2c_han = i2c_handle;
+	i2c_addr = SGP41_I2C_ADDRESS << 1;
+
+	return true;
 }
 
 uint16_t SensirionI2CSgp41::executeConditioning(uint16_t defaultRh,
@@ -65,16 +67,16 @@ uint16_t SensirionI2CSgp41::executeConditioning(uint16_t defaultRh,
     }
 
     error = SensirionI2CCommunication::sendFrame(SGP41_I2C_ADDRESS, txFrame,
-                                                 *_i2cBus);
+    		i2c_han);
     if (error) {
         return error;
     }
 
-    delay(50);
+    HAL_Delay(50);
 
     SensirionI2CRxFrame rxFrame(buffer, 8);
     error = SensirionI2CCommunication::receiveFrame(SGP41_I2C_ADDRESS, 3,
-                                                    rxFrame, *_i2cBus);
+                                                    rxFrame, i2c_han);
     if (error) {
         return error;
     }
@@ -99,16 +101,16 @@ uint16_t SensirionI2CSgp41::measureRawSignals(uint16_t relativeHumidity,
     }
 
     error = SensirionI2CCommunication::sendFrame(SGP41_I2C_ADDRESS, txFrame,
-                                                 *_i2cBus);
+    		i2c_han);
     if (error) {
         return error;
     }
 
-    delay(50);
+    HAL_Delay(50);
 
     SensirionI2CRxFrame rxFrame(buffer, 8);
     error = SensirionI2CCommunication::receiveFrame(SGP41_I2C_ADDRESS, 6,
-                                                    rxFrame, *_i2cBus);
+                                                    rxFrame, i2c_han);
     if (error) {
         return error;
     }
@@ -125,16 +127,16 @@ uint16_t SensirionI2CSgp41::executeSelfTest(uint16_t& testResult) {
         SensirionI2CTxFrame::createWithUInt16Command(0x280E, buffer, 3);
 
     error = SensirionI2CCommunication::sendFrame(SGP41_I2C_ADDRESS, txFrame,
-                                                 *_i2cBus);
+    		i2c_han);
     if (error) {
         return error;
     }
 
-    delay(320);
+    HAL_Delay(320);
 
     SensirionI2CRxFrame rxFrame(buffer, 3);
     error = SensirionI2CCommunication::receiveFrame(SGP41_I2C_ADDRESS, 3,
-                                                    rxFrame, *_i2cBus);
+                                                    rxFrame, i2c_han);
     if (error) {
         return error;
     }
@@ -150,8 +152,8 @@ uint16_t SensirionI2CSgp41::turnHeaterOff() {
         SensirionI2CTxFrame::createWithUInt16Command(0x3615, buffer, 2);
 
     error = SensirionI2CCommunication::sendFrame(SGP41_I2C_ADDRESS, txFrame,
-                                                 *_i2cBus);
-    delay(1);
+    		i2c_han);
+    HAL_Delay(1);
     return error;
 }
 
@@ -163,16 +165,16 @@ uint16_t SensirionI2CSgp41::getSerialNumber(uint16_t serialNumber[],
         SensirionI2CTxFrame::createWithUInt16Command(0x3682, buffer, 9);
 
     error = SensirionI2CCommunication::sendFrame(SGP41_I2C_ADDRESS, txFrame,
-                                                 *_i2cBus);
+    		i2c_han);
     if (error) {
         return error;
     }
 
-    delay(1);
+    HAL_Delay(1);
 
     SensirionI2CRxFrame rxFrame(buffer, 9);
     error = SensirionI2CCommunication::receiveFrame(SGP41_I2C_ADDRESS, 9,
-                                                    rxFrame, *_i2cBus);
+                                                    rxFrame, i2c_han);
     if (error) {
         return error;
     }

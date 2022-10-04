@@ -39,9 +39,8 @@
 #ifndef SENSIRIONI2CSGP41_H
 #define SENSIRIONI2CSGP41_H
 
-#include <Wire.h>
-
-#include <SensirionCore.h>
+#include "stm32wbxx_hal.h"
+#include "../Sensirion_Core/src/SensirionCore.h"
 
 class SensirionI2CSgp41 {
 
@@ -53,7 +52,7 @@ class SensirionI2CSgp41 {
      * @param serial Arduino stream object to be communicated with.
      *
      */
-    void begin(TwoWire& i2cBus);
+    bool begin(I2C_HandleTypeDef *i2c_handle = 0);
 
     /**
      * executeConditioning() - This command starts the conditioning, i.e., the
@@ -134,7 +133,8 @@ class SensirionI2CSgp41 {
     uint16_t getSerialNumber(uint16_t serialNumber[], uint8_t serialNumberSize);
 
   private:
-    TwoWire* _i2cBus = nullptr;
+	I2C_HandleTypeDef *i2c_han = NULL;///< Pointer to I2C bus interface
+	uint8_t i2c_addr = 0;
 };
 
 #endif /* SENSIRIONI2CSGP41_H */
